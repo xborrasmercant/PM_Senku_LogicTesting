@@ -2,56 +2,70 @@ import java.util.Scanner;
 
 public class Board {
     private Cell[][] boardMatrix;
-    private int[][] borders = new int[][]{ {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 5}, {0, 6}, {1, 5}, {1, 6}, {5, 0}, {5, 1}, {6, 0}, {6, 1}, {5, 5}, {5, 6}, {6, 5}, {6, 6}};
-    private enum Direction {
+    private int[][] borders = new int[][]{ {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 5}, {0, 6}, {1, 5}, {1, 6}, {5, 0}, {5, 1}, {6, 0}, {6, 1}, {5, 5}, {5, 6}, {6, 5}, {6, 6}}; // Coords to avoid checking borders of matrix
+    private enum Direction { // Movement directions
         UP, DOWN, RIGHT, LEFT;
     };
 
-    private enum Status {
+    private enum Status { // Current status of the board
         GAMEOVER, WIN, PLAYABLE;
     };
 
-
-    public Board () {
+    public Board() {
         boardMatrix = new Cell[7][7];
-        //initBoard();
-        initTestingBoard();
+        initBoard();
     }
 
+    // GAME STATUS Methods
+    public void handleBoardStatus() {
+        switch (this.getBoardStatus()) {
+            case WIN -> {
+                System.out.println("========== YOU WON THE GAME ==========\n" +
+                        "(You successfully removed all the possible pegs!)");
 
-        public Status checkBoardStatus() {
-            int pegCount = 0;
+                System.exit(0);
+            }
+            case GAMEOVER -> {
+                System.out.println("========== GAME OVER ==========\n" +
+                        "(There's no movable pegs left)");
+                System.exit(0);
+            }
+            case PLAYABLE -> {
+                return;
+            }
+        }
+    }
+    public Status getBoardStatus() {
+        int pegCount = 0;
 
-            for (Cell[] row : boardMatrix) {
-                for (Cell cell : row) {
-                    if (cell.getValue() > 0 ) {
-                        if (canMove(cell)) {return Status.PLAYABLE;};
-                        pegCount++;
-                    }
+        for (Cell[] row : boardMatrix) {
+            for (Cell cell : row) {
+                if (cell.getValue() > 0 ) {
+                    if (canMove(cell)) {return Status.PLAYABLE;};
+                    pegCount++;
                 }
             }
-
-            if (pegCount == 1) {return Status.WIN;}
-
-            return Status.GAMEOVER;
         }
 
+        if (pegCount == 1) {return Status.WIN;}
+
+        return Status.GAMEOVER;
+    }
     public boolean canMove(Cell cell) {
 
-            if (isValidMove(cell.getRowPos()+1, cell.getColPos(), cell.getRowPos()+2, cell.getColPos())) { // Try down
+            if (insideBounds(cell.getRowPos()+1, cell.getColPos(), cell.getRowPos()+2, cell.getColPos())) { // Try down
                 return true;
-            } else if (isValidMove(cell.getRowPos(), cell.getColPos()+1, cell.getRowPos(), cell.getColPos()+2)) { // Try up
+            } else if (insideBounds(cell.getRowPos(), cell.getColPos()+1, cell.getRowPos(), cell.getColPos()+2)) { // Try up
                 return true;
-            } else if (isValidMove(cell.getRowPos()-1, cell.getColPos(), cell.getRowPos()-2, cell.getColPos())) { // Try left
+            } else if (insideBounds(cell.getRowPos()-1, cell.getColPos(), cell.getRowPos()-2, cell.getColPos())) { // Try left
                 return true;
-            } else if (isValidMove(cell.getRowPos(), cell.getColPos()-1, cell.getRowPos(), cell.getColPos()-2)) { // Try right
+            } else if (insideBounds(cell.getRowPos(), cell.getColPos()-1, cell.getRowPos(), cell.getColPos()-2)) { // Try right
                 return true;
             }
 
             return false;
     }
-
-    private boolean isValidMove(int middleCellRow, int middleCellCol, int targetCellRow, int targetCellCol) {
+    private boolean insideBounds(int middleCellRow, int middleCellCol, int targetCellRow, int targetCellCol) {
         try {
             return boardMatrix[middleCellRow][middleCellCol].getValue() == 1 || boardMatrix[targetCellRow][targetCellCol].getValue() == 2;
         } catch (IndexOutOfBoundsException e) {
@@ -60,22 +74,20 @@ public class Board {
         }
     }
 
-    public void moveCell(Cell selectedCell, Cell targetCell, Direction movementDirection) {
-
+    // MOVEMENT Methods
+    public void handleMovement(Cell selectedCell, Cell targetCell, Direction movementDirection) {
         switch (movementDirection) {
-            case DOWN -> handleMovement(selectedCell, targetCell, selectedCell.getRowPos()+1, selectedCell.getColPos());
-            case UP -> handleMovement(selectedCell, targetCell, selectedCell.getRowPos()-1, selectedCell.getColPos()+1);
-            case RIGHT -> handleMovement(selectedCell, targetCell, selectedCell.getRowPos(), selectedCell.getColPos()+1);
-            case LEFT -> handleMovement(selectedCell, targetCell, selectedCell.getRowPos(), selectedCell.getColPos()-1);
+            case DOWN -> applyMovement(selectedCell, targetCell, selectedCell.getRowPos()+1, selectedCell.getColPos());
+            case UP -> applyMovement(selectedCell, targetCell, selectedCell.getRowPos()-1, selectedCell.getColPos());
+            case RIGHT -> applyMovement(selectedCell, targetCell, selectedCell.getRowPos(), selectedCell.getColPos()+1);
+            case LEFT -> applyMovement(selectedCell, targetCell, selectedCell.getRowPos(), selectedCell.getColPos()-1);
         }
     }
-
-    public void handleMovement(Cell selectedCell, Cell targetCell, int row, int col) {
+    public void applyMovement(Cell selectedCell, Cell targetCell, int row, int col) {
         selectedCell.setValue(0);
         boardMatrix[row][col].setValue(0); // Empty cell between selected and target cells
         targetCell.setValue(1);
     }
-
     public Direction getDirection(Cell selectedCell, Cell targetCell) {
 
         // Check the difference result of selected and target pegs.
@@ -101,8 +113,8 @@ public class Board {
         };
     }
 
+    // INITIALIZATION Methods
     public void initBoard() {
-
         // Fill with pegs
         for (int row = 0; row < 7; row++) {
             for (int col = 0; col < 7; col++) {
@@ -118,7 +130,6 @@ public class Board {
         // Set the empty position of the board (center)
         boardMatrix[3][3].setValue(0);
     }
-
     public void initTestingBoard() {
 
         // Fill with empty cells
@@ -138,6 +149,7 @@ public class Board {
         boardMatrix[2][3].setValue(1);
     }
 
+    //TERMINAL Methods
     public void cleanTerminal(){
         System.out.println();
         System.out.println();
@@ -177,13 +189,10 @@ public class Board {
 
         gameBoard.printBoard();
         while (true) {
-            switch (gameBoard.checkBoardStatus()) {
-                case WIN -> System.exit(0);
-                case GAMEOVER -> System.exit(0);
-                case PLAYABLE -> System.out.println();
-            }
+            gameBoard.handleBoardStatus();
 
             try {
+                // SELECT PEG
                 System.out.println("Select one peg to move (row col): ");
                 int selectedRow = in.nextInt();
                 int selectedCol = in.nextInt();
@@ -194,6 +203,7 @@ public class Board {
                     continue;
                 }
 
+                // TARGET PEG
                 System.out.println("Select target position (row col): ");
                 int targetRow = in.nextInt();
                 int targetCol = in.nextInt();
@@ -204,9 +214,10 @@ public class Board {
                     continue;
                 }
 
+                // MOVEMENT
                 Direction movementDirection = gameBoard.getDirection(selectedCell, targetCell);
                 if (movementDirection != null) {
-                    gameBoard.moveCell(selectedCell, targetCell, movementDirection);
+                    gameBoard.handleMovement(selectedCell, targetCell, movementDirection);
                     gameBoard.printBoard();
 
                 } else {
