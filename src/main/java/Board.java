@@ -2,24 +2,62 @@ import java.util.Scanner;
 
 public class Board {
     private Cell[][] boardMatrix;
-    public enum Direction {
+    private int[][] borders = new int[][]{ {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 5}, {0, 6}, {1, 5}, {1, 6}, {5, 0}, {5, 1}, {6, 0}, {6, 1}, {5, 5}, {5, 6}, {6, 5}, {6, 6}};
+    private enum Direction {
         UP, DOWN, RIGHT, LEFT;
-    }
+    };
+
+    private enum Status {
+        GAMEOVER, WIN, PLAYABLE;
+    };
 
 
     public Board () {
         boardMatrix = new Cell[7][7];
-        initBoard();
+        //initBoard();
+        initTestingBoard();
     }
+
+
+        public Status checkBoardStatus() {
+            int pegCount = 0;
+
+            for (Cell[] row : boardMatrix) {
+                for (Cell cell : row) {
+                    if (cell.getValue() > 0 ) {
+                        if (canMove(cell)) {return Status.PLAYABLE;};
+                        pegCount++;
+                    }
+                }
+            }
+
+            if (pegCount == 1) {return Status.WIN;}
+
+            return Status.GAMEOVER;
+        }
 
     public boolean canMove(Cell cell) {
-        // TODO: check if a certain cell have the possibility of moving
-        return false;
+
+            if (isValidMove(cell.getRowPos()+1, cell.getColPos(), cell.getRowPos()+2, cell.getColPos())) { // Try down
+                return true;
+            } else if (isValidMove(cell.getRowPos(), cell.getColPos()+1, cell.getRowPos(), cell.getColPos()+2)) { // Try up
+                return true;
+            } else if (isValidMove(cell.getRowPos()-1, cell.getColPos(), cell.getRowPos()-2, cell.getColPos())) { // Try left
+                return true;
+            } else if (isValidMove(cell.getRowPos(), cell.getColPos()-1, cell.getRowPos(), cell.getColPos()-2)) { // Try right
+                return true;
+            }
+
+            return false;
     }
 
-    public boolean checkBoardStatus() {
-        // TODO: this method will check all the cells of the board, after each user movement, looking if there is any movement available (canMove(cell)), if not game will result in game over.
-        return false;
+    private boolean isValidMove(int middleCellRow, int middleCellCol, int targetCellRow, int targetCellCol) {
+        try {
+            return boardMatrix[middleCellRow][middleCellCol].getValue() == 1 || boardMatrix[targetCellRow][targetCellCol].getValue() == 2;
+        } catch (IndexOutOfBoundsException e) {
+            // Return false if trying to access out of bounds
+            return false;
+        }
     }
 
     public void moveCell(Cell selectedCell, Cell targetCell, Direction movementDirection) {
@@ -72,8 +110,7 @@ public class Board {
             }
         }
 
-        // Define borders of board
-        int[][] borders = new int[][]{ {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 5}, {0, 6}, {1, 5}, {1, 6}, {5, 0}, {5, 1}, {6, 0}, {6, 1}, {5, 5}, {5, 6}, {6, 5}, {6, 6}};
+        // Define borders of boardMatrix
         for (int[] pos : borders) {
             boardMatrix[pos[0]][pos[1]].setValue(-1);
         }
@@ -81,6 +118,26 @@ public class Board {
         // Set the empty position of the board (center)
         boardMatrix[3][3].setValue(0);
     }
+
+    public void initTestingBoard() {
+
+        // Fill with empty cells
+        for (int row = 0; row < 7; row++) {
+            for (int col = 0; col < 7; col++) {
+                boardMatrix[row][col] = new Cell(col, row, 0);
+            }
+        }
+
+        // Define borders of boardMatrix
+        for (int[] pos : borders) {
+            boardMatrix[pos[0]][pos[1]].setValue(-1);
+        }
+
+        // Set two pegs for testing the game over method
+        boardMatrix[3][3].setValue(1);
+        boardMatrix[2][3].setValue(1);
+    }
+
     public void cleanTerminal(){
         System.out.println();
         System.out.println();
@@ -120,6 +177,12 @@ public class Board {
 
         gameBoard.printBoard();
         while (true) {
+            switch (gameBoard.checkBoardStatus()) {
+                case WIN -> System.exit(0);
+                case GAMEOVER -> System.exit(0);
+                case PLAYABLE -> System.out.println();
+            }
+
             try {
                 System.out.println("Select one peg to move (row col): ");
                 int selectedRow = in.nextInt();
@@ -145,6 +208,7 @@ public class Board {
                 if (movementDirection != null) {
                     gameBoard.moveCell(selectedCell, targetCell, movementDirection);
                     gameBoard.printBoard();
+
                 } else {
                     System.out.println("Invalid move, please try again.");
                 }
