@@ -12,6 +12,15 @@ public class Board {
         initBoard();
     }
 
+    public boolean canMove(Cell cell) {
+        // TODO: check if a certain cell have the possibility of moving
+        return false;
+    }
+
+    public boolean checkBoardStatus() {
+        // TODO: this method will check all the cells of the board, after each user movement, looking if there is any movement available (canMove(cell)), if not game will result in game over.
+        return false;
+    }
 
     public void moveCell(Cell selectedCell, Cell targetCell, Direction movementDirection) {
 
