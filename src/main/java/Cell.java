@@ -7,6 +7,7 @@ public class Cell {
         this.value = value;
     }
 
+    // GETTERS and SETTERS
     public int getColPos() {
         return colPos;
     }

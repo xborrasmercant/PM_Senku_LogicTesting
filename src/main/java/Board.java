@@ -3,14 +3,15 @@ import java.util.Scanner;
 public class Board {
     private Cell[][] boardMatrix;
     private int[][] borders = new int[][]{ {0, 0}, {0, 1}, {1, 0}, {1, 1}, {0, 5}, {0, 6}, {1, 5}, {1, 6}, {5, 0}, {5, 1}, {6, 0}, {6, 1}, {5, 5}, {5, 6}, {6, 5}, {6, 6}}; // Coords to avoid checking borders of matrix
-    private enum Direction { // Movement directions
+    public enum Direction { // Movement directions
         UP, DOWN, RIGHT, LEFT;
     };
 
-    private enum Status { // Current status of the board
+    public enum Status { // Current status of the board
         GAMEOVER, WIN, PLAYABLE;
     };
 
+    // CONSTRUCTOR
     public Board() {
         boardMatrix = new Cell[7][7];
         initBoard();
@@ -183,50 +184,17 @@ public class Board {
 
     }
 
-    public static void main(String[] args) {
-        Board gameBoard = new Board();
-        Scanner in = new Scanner(System.in);
-
-        gameBoard.printBoard();
-        while (true) {
-            gameBoard.handleBoardStatus();
-
-            try {
-                // SELECT PEG
-                System.out.println("Select one peg to move (row col): ");
-                int selectedRow = in.nextInt();
-                int selectedCol = in.nextInt();
-                Cell selectedCell = gameBoard.boardMatrix[selectedRow][selectedCol];
-
-                if (selectedCell.getValue() != 1) {
-                    System.out.println("Invalid selection, please select a peg.");
-                    continue;
-                }
-
-                // TARGET PEG
-                System.out.println("Select target position (row col): ");
-                int targetRow = in.nextInt();
-                int targetCol = in.nextInt();
-                Cell targetCell = gameBoard.boardMatrix[targetRow][targetCol];
-
-                if (targetCell.getValue() != 0) {
-                    System.out.println("Invalid target, please select an empty cell.");
-                    continue;
-                }
-
-                // MOVEMENT
-                Direction movementDirection = gameBoard.getDirection(selectedCell, targetCell);
-                if (movementDirection != null) {
-                    gameBoard.handleMovement(selectedCell, targetCell, movementDirection);
-                    gameBoard.printBoard();
-
-                } else {
-                    System.out.println("Invalid move, please try again.");
-                }
-            } catch (Exception e) {
-                System.out.println("Invalid input, please enter valid row and column numbers.");
-                in.nextLine(); // Clear the buffer
-            }
-        }
+    // GETTERS and SETTERS
+    public Cell[][] getBoardMatrix() {
+        return boardMatrix;
+    }
+    public void setBoardMatrix(Cell[][] boardMatrix) {
+        this.boardMatrix = boardMatrix;
+    }
+    public int[][] getBorders() {
+        return borders;
+    }
+    public void setBorders(int[][] borders) {
+        this.borders = borders;
     }
 }
